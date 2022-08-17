@@ -17,7 +17,7 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void createUsersTable() {
-        String sql = "CREATE TABLE test_users (" +
+        String sql = "CREATE TABLE IF NOT EXISTS test_users (" +
                 "id int NOT NULL AUTO_INCREMENT," +
                 "name varchar(100) NOT NULL," +
                 "lastName varchar(100) NOT NULL," +
@@ -33,7 +33,7 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void dropUsersTable() {
-        String sql = "DROP TABLE bdusk.test_users";
+        String sql = "DROP TABLE IF EXISTS bdusk.test_users";
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(sql);
             logger.log(Level.INFO, "Таблица удалена");
@@ -44,11 +44,11 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void saveUser(String name, String lastName, byte age) {
         String sql = "INSERT INTO bdusk.test_users(name, lastname, age) VALUES(?,?,?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, name);
-            ps.setString(2, lastName);
-            ps.setByte(3, age);
-            ps.executeUpdate();
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setByte(3, age);
+            preparedStatement.executeUpdate();
             System.out.printf("User с именем – %s добавлен в базу данных %n", name);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -56,9 +56,10 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void removeUserById(long id) {
-        String sql = "DELETE FROM bdusk.test_users WHERE ID";
-        try (Statement s = connection.createStatement()) {
-            s.executeUpdate(sql);
+        String sql = "DELETE FROM bdusk.test_users WHERE ID=?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setLong(1, id);
+            preparedStatement.executeUpdate();
             logger.log(Level.INFO, "Пользователь ID({0}) удален \n", id);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -68,15 +69,15 @@ public class UserDaoJDBCImpl implements UserDao {
     public List<User> getAllUsers() {
         List<User> listAllUsers = new ArrayList<>();
         String sql = "SELECT id, name, lastName, age FROM bdusk.test_users";
-        try (Statement s = connection.createStatement()) {
-            ResultSet rs = s.executeQuery(sql);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            ResultSet resultSet = preparedStatement.executeQuery(sql);
 
-            while (rs.next()) {
+            while (resultSet.next()) {
                 User user = new User();
-                user.setId(rs.getLong("id"));
-                user.setName(rs.getString("name"));
-                user.setLastName(rs.getString("lastName"));
-                user.setAge(rs.getByte("age"));
+                user.setId(resultSet.getLong("id"));
+                user.setName(resultSet.getString("name"));
+                user.setLastName(resultSet.getString("lastName"));
+                user.setAge(resultSet.getByte("age"));
                 listAllUsers.add(user);
             }
             logger.log(Level.INFO, "Все пользователи получены и добавлены в список");
@@ -89,8 +90,8 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void cleanUsersTable() {
         String sql = "DELETE FROM bdusk.test_users";
-        try (Statement s = connection.createStatement()) {
-            s.executeUpdate(sql);
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(sql);
             logger.log(Level.INFO, "Таблица очищена");
         } catch (SQLException e) {
             e.printStackTrace();
