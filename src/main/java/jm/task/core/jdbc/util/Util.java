@@ -14,13 +14,13 @@ public class Util {
     private static final String PASSWORD = "root";
 
     public static Connection getConnection() {
-        Connection connection;
+        Connection connection = null;
         try {
             Driver driver = new FabricMySQLDriver();
             DriverManager.registerDriver(driver);
             connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
 
         return connection;
