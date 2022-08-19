@@ -60,7 +60,7 @@ public class UserDaoJDBCImpl implements UserDao {
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
-            logger.log(Level.INFO, "Пользователь ID({0}) удален \n", id);
+            logger.log(Level.INFO, "Пользователь с ID({0}) удален \n", id);
         } catch (SQLException e) {
             e.printStackTrace();
         }
